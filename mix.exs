@@ -12,14 +12,18 @@ defmodule Benchmark.MixProject do
   end
 
   def application do
-    [extra_applications: [:logger]]
+    [
+      extra_applications: [:logger],
+      mod: {Benchmark.Application, []}
+    ]
   end
 
   defp deps do
     [
-      {:muontrap, "~> 1.0", optional: true},
-      {:jason, ">= 0.0.0"},
-      {:plug, "~> 1.14"}
+      {:finch, "~> 0.13"},
+      {:jason, "~> 1.4"},
+      {:muontrap, "~> 1.0"},
+      {:csv, "~> 3.0"}
     ]
   end
 end

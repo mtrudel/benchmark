@@ -4,24 +4,21 @@ defmodule Mix.Tasks.Benchmark do
 
   use Mix.Task
 
+  @requirements ["app.start"]
+
   @impl Mix.Task
-  def run([server]), do: run([server, nil])
+  def run([]),
+    do: Mix.Shell.IO.error("usage: mix benchmark [--normal | --tiny | --huge] [server_def]*")
 
-  def run([server, filename]) do
-    [server, treeish] =
-      case String.split(server, "@") do
-        [server, treeish] -> [server, treeish]
-        ["bandit"] -> ["bandit", "local"]
-        ["cowboy"] -> ["cowboy", "master"]
-      end
-
-    filename = filename || "#{server}-#{treeish}.json"
-    File.write!(filename, Benchmark.run(server, treeish) |> Jason.encode!(pretty: true))
+  def run(["--" <> profile | servers]) do
+    servers
+    |> Enum.map(&Benchmark.run(&1, String.to_atom(profile)))
+    |> tap(fn results ->
+      results
+      |> List.flatten()
+      |> Benchmark.CSVExport.export("http-benchmark.csv")
+    end)
   end
 
-  def run(_) do
-    Mix.Shell.IO.error(
-      "usage: mix benchmark <bandit[@(treeish | local)] | cowboy[@treeish]> [filename.json]"
-    )
-  end
+  def run(servers), do: run(["--normal" | servers])
 end
