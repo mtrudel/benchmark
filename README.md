@@ -1,21 +1,15 @@
 # Benchmark
 
-**TODO: Add description**
+This app defines a set of mix tasks to benchmark the performance of
+arbitrary plug-compatible web servers. 
 
-## Installation
+## Usage
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `benchmark` to your list of dependencies in `mix.exs`:
+The following will run the complete benchmark suite against either Bandit or
+Cowboy, installing the corresponding mix package from the given GitHub treeish
+(in the case of Bandit only, the value 'local' may also be specified to depend
+on the version of Bandit in the parent directory).
 
-```elixir
-def deps do
-  [
-    {:benchmark, "~> 0.1.0"}
-  ]
-end
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/benchmark>.
-
+> mix benchmark <bandit|cowboy> <github_treeish|local> [filename.json]
+```
