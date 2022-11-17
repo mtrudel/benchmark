@@ -54,7 +54,7 @@ defmodule Mix.Tasks.Benchmark.Compare do
 
   defp compare(a, b, key, larger_is_better, positive_msg, negative_msg) do
     if a[key] == 0 do
-      ":ballot_box_with_check: NO CONTEST"
+      ":collision: ERROR"
     else
       ratio = b[key] / a[key]
       ratio_str = :erlang.float_to_binary(ratio, decimals: 2)
@@ -73,7 +73,7 @@ defmodule Mix.Tasks.Benchmark.Compare do
           ":x: #{negative_msg} (#{ratio_str}x)"
 
         true ->
-          ":vs: IT'S A WASH"
+          ":ballot_box_with_check: IT'S A WASH (#{ratio_str}x)"
       end
     end
   end
