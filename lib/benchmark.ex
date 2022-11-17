@@ -11,9 +11,10 @@ defmodule Benchmark do
 
   defp parse!(server) do
     case String.split(server, "@") do
-      [server, treeish] -> %{server: server, treeish: treeish}
-      ["bandit"] -> %{server: "bandit", treeish: "local"}
+      ["bandit", repo, treeish] -> %{server: "bandit", repo: repo, treeish: treeish}
+      ["bandit"] -> %{server: "bandit", repo: "local"}
       ["cowboy"] -> %{server: "cowboy", treeish: "master"}
+      [server, treeish] -> %{server: server, treeish: treeish}
       other -> raise "Unsupported server definition #{other}"
     end
     |> Map.merge(%{hostname: "localhost", port: 4000})

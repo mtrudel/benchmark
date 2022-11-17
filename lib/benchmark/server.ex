@@ -42,10 +42,21 @@ defmodule Benchmark.Server do
     end
   end
 
-  defp server_script(%{server: "bandit", treeish: "local", port: port}) do
+  defp server_script(%{server: "bandit", repo: "local", port: port}) do
     quote do
       unquote(memory_monitor())
       Mix.install([{:bandit, path: "../bandit"}])
+      unquote(plug_def())
+      Bandit.start_link(plug: BenchmarkPlug, options: [port: unquote(port)])
+      Process.sleep(:infinity)
+    end
+    |> Macro.to_string()
+  end
+
+  defp server_script(%{server: "bandit", repo: repo, treeish: treeish, port: port}) do
+    quote do
+      unquote(memory_monitor())
+      Mix.install([{:bandit, git: unquote(repo), ref: unquote(treeish)}])
       unquote(plug_def())
       Bandit.start_link(plug: BenchmarkPlug, options: [port: unquote(port)])
       Process.sleep(:infinity)
