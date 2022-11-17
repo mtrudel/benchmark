@@ -21,7 +21,8 @@ defmodule Benchmark.Server do
   end
 
   defp start_server(server_def) do
-    MuonTrap.Daemon.start_link("elixir", ["-e", server_script(server_def)], log_output: :debug)
+    # Pass `log_output: :debug` to see process output
+    MuonTrap.Daemon.start_link("elixir", ["-e", server_script(server_def)])
   end
 
   defp stop_server(pid), do: GenServer.stop(pid)
