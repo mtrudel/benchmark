@@ -21,8 +21,10 @@ defmodule Benchmark.Server do
   end
 
   defp start_server(server_def) do
-    # Pass `log_output: :debug` to see process output
-    MuonTrap.Daemon.start_link("elixir", ["-e", server_script(server_def)])
+    MuonTrap.Daemon.start_link("elixir", ["-e", server_script(server_def)],
+      stderr_to_stdout: true,
+      log_output: :debug
+    )
   end
 
   defp stop_server(pid), do: GenServer.stop(pid)
@@ -43,7 +45,7 @@ defmodule Benchmark.Server do
     end
   end
 
-  defp server_script(%{server: "bandit", repo: "local", port: port}) do
+  defp server_script(%{server: "bandit", treeish: "local", port: port}) do
     quote do
       unquote(memory_monitor())
       Mix.install([{:bandit, path: "../bandit"}])

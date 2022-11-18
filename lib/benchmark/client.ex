@@ -13,7 +13,7 @@ defmodule Benchmark.Client do
 
     build_scenarios(profile)
     |> Enum.map(fn scenario ->
-      Logger.debug("Running #{inspect(scenario)}")
+      Logger.info("Running #{scenario.protocol} with #{scenario.clients} clients")
 
       reset_server_stats(server_def)
 
@@ -84,7 +84,8 @@ defmodule Benchmark.Client do
           "-c",
           to_string(scenario.clients),
           "http://#{server_def.hostname}:#{server_def.port}/echo"
-        ]
+        ],
+      stderr_to_stdout: true
     )
   end
 

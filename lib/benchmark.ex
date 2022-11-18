@@ -12,7 +12,7 @@ defmodule Benchmark do
   defp parse!(server) do
     case String.split(server, "@") do
       ["bandit", repo, treeish] -> %{server: "bandit", repo: repo, treeish: treeish}
-      ["bandit"] -> %{server: "bandit", repo: "local"}
+      ["bandit"] -> %{server: "bandit", treeish: "local"}
       ["cowboy"] -> %{server: "cowboy", treeish: "master"}
       [server, treeish] -> %{server: server, treeish: treeish}
       other -> raise "Unsupported server definition #{inspect(other)}"

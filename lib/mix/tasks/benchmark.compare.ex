@@ -4,6 +4,8 @@ defmodule Mix.Tasks.Benchmark.Compare do
 
   use Mix.Task
 
+  require Logger
+
   @requirements ["app.start"]
   @margin_of_error 0.1
 
@@ -48,7 +50,8 @@ defmodule Mix.Tasks.Benchmark.Compare do
     #{Enum.map_join(results, "\n", &("| " <> Enum.join(&1, " | ") <> " |"))}
     """
 
-    IO.inspect(summary)
+    Logger.info("Writing summary to http-summary.md")
+
     File.write!("http-summary.md", summary)
   end
 
