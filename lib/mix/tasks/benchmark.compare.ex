@@ -26,13 +26,14 @@ defmodule Mix.Tasks.Benchmark.Compare do
         scenario = result_a.scenario
         result_b = Enum.find(results_b, &(&1.scenario == scenario))
 
-        {scenario.protocol, scenario.clients, scenario.concurrency, result_a.result,
-         result_b.result}
+        {scenario.protocol, scenario.endpoint, scenario.clients, scenario.concurrency,
+         result_a.result, result_b.result}
       end)
       |> Enum.sort()
-      |> Enum.map(fn {protocol, clients, _concurrency, result_a, result_b} ->
+      |> Enum.map(fn {protocol, endpoint, clients, _concurrency, result_a, result_b} ->
         [
           protocol,
+          endpoint,
           clients,
           compare(result_a, result_b, :reqs_per_sec_mean, true, "FASTER", "SLOWER"),
           compare(result_a, result_b, :memory_total, false, "LOWER", "HIGHER")
@@ -45,8 +46,8 @@ defmodule Mix.Tasks.Benchmark.Compare do
     summary = """
     **#{server_b.server} (#{server_b.treeish})** vs **#{server_a.server} (#{server_a.treeish})**
 
-    | Protocol | # Clients | Reqs per sec (mean) | Total memory |
-    | -------- | --------- | ------------------- | ------------ |
+    | Protocol | Endpoint | # Clients | Reqs per sec (mean) | Total memory |
+    | -------- | -------- | --------- | ------------------- | ------------ |
     #{Enum.map_join(results, "\n", &("| " <> Enum.join(&1, " | ") <> " |"))}
     """
 

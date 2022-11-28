@@ -13,7 +13,9 @@ defmodule Benchmark.Client do
 
     build_scenarios(profile)
     |> Enum.map(fn scenario ->
-      Logger.info("Running #{scenario.protocol} with #{scenario.clients} clients")
+      Logger.info(
+        "Running #{scenario.protocol} with #{scenario.clients} clients against #{scenario.endpoint}"
+      )
 
       reset_server_stats(server_def)
 
@@ -31,7 +33,8 @@ defmodule Benchmark.Client do
     do_build_scenarios(
       protocols: ["http/1.1", "h2c"],
       clients_and_threads: [{1, 1}, {4, 4}, {16, 16}, {64, 32}],
-      concurrencies: [1]
+      concurrencies: [1],
+      endpoints: ["noop", "upload", "download", "echo"]
     )
   end
 
@@ -39,7 +42,8 @@ defmodule Benchmark.Client do
     do_build_scenarios(
       protocols: ["http/1.1"],
       clients_and_threads: [{1, 1}],
-      concurrencies: [1]
+      concurrencies: [1],
+      endpoints: ["echo"]
     )
   end
 
@@ -47,15 +51,23 @@ defmodule Benchmark.Client do
     do_build_scenarios(
       protocols: ["http/1.1", "h2c"],
       clients_and_threads: [{1, 1}, {4, 4}, {16, 16}, {64, 32}, {256, 32}, {1024, 32}],
-      concurrencies: [1, 4, 16]
+      concurrencies: [1, 4, 16],
+      endpoints: ["noop", "upload", "download", "echo"]
     )
   end
 
   defp do_build_scenarios(params) do
     for protocol <- params[:protocols],
         concurrency <- params[:concurrencies],
-        {clients, threads} <- params[:clients_and_threads] do
-      %{protocol: protocol, concurrency: concurrency, threads: threads, clients: clients}
+        {clients, threads} <- params[:clients_and_threads],
+        endpoint <- params[:endpoints] do
+      %{
+        protocol: protocol,
+        concurrency: concurrency,
+        threads: threads,
+        clients: clients,
+        endpoint: endpoint
+      }
     end
   end
 
@@ -67,23 +79,29 @@ defmodule Benchmark.Client do
         _ -> ["-D", "30", "--warm-up-time", "5"]
       end
 
-    upload_file = if profile in [:normal_bigfile, :huge_bigfile], do: @file_10m, else: @file_10k
+    upload =
+      if scenario.endpoint in [:upload, :echo] do
+        if profile in [:normal_bigfile, :huge_bigfile],
+          do: ["-d", @file_10m],
+          else: ["-d", @file_10k]
+      else
+        []
+      end
 
     MuonTrap.cmd(
       "h2load",
       duration ++
+        upload ++
         [
           "-p",
           scenario.protocol,
-          "-d",
-          upload_file,
           "-m",
           to_string(scenario.concurrency),
           "-t",
           to_string(scenario.threads),
           "-c",
           to_string(scenario.clients),
-          "http://#{server_def.hostname}:#{server_def.port}/echo"
+          "http://#{server_def.hostname}:#{server_def.port}/#{scenario.endpoint}"
         ],
       stderr_to_stdout: true
     )

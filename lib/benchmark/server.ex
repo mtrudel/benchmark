@@ -135,7 +135,25 @@ defmodule Benchmark.Server do
 
         import Plug.Conn
 
+        @payload String.duplicate("a", 10_000)
+
         def init(opts), do: opts
+
+        def call(%{path_info: ["noop"]} = conn, _opts) do
+          MemoryMonitor.record_stats()
+          send_resp(conn, 204, <<>>)
+        end
+
+        def call(%{path_info: ["upload"]} = conn, _opts) do
+          {:ok, body, conn} = do_read_body(conn)
+          MemoryMonitor.record_stats()
+          send_resp(conn, 204, <<>>)
+        end
+
+        def call(%{path_info: ["download"]} = conn, _opts) do
+          MemoryMonitor.record_stats()
+          send_resp(conn, 204, @payload)
+        end
 
         def call(%{path_info: ["echo"]} = conn, _opts) do
           {:ok, body, conn} = do_read_body(conn)
