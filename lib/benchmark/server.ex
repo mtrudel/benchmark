@@ -105,22 +105,22 @@ defmodule Benchmark.Server do
         end
 
         def init(_) do
-          {:ok, []}
+          {:ok, %{}}
         end
 
-        def handle_cast({:record_stats, new_stats}, state), do: {:noreply, [new_stats | state]}
+        def handle_cast({:record_stats, new_stats}, state) do
+          new_stats
+          |> Enum.reduce(state, fn {k, v}, state ->
+            Map.update(state, k, v, &max(&1, v))
+          end)
+          |> Map.update(:count, 1, &(&1 + 1))
+          |> then(&{:noreply, &1})
+        end
 
         def handle_call(:get_stats, _from, state) do
-          result =
-            state
-            |> Enum.reduce(fn elem, acc ->
-              elem
-              |> Keyword.map(fn {k, v} -> max(v, acc[k]) end)
-            end)
-            |> Keyword.put(:count, length(state))
-            |> Enum.map_join(", ", fn {k, v} -> "\"memory_#{k}\": #{v}" end)
-
-          {:reply, "{#{result}}", state}
+          state
+          |> Enum.map_join(", ", fn {k, v} -> "\"memory_#{k}\": #{v}" end)
+          |> then(&{:reply, "{#{&1}}", state})
         end
       end
 
