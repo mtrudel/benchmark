@@ -7,7 +7,7 @@ defmodule Mix.Tasks.Benchmark.Compare do
   require Logger
 
   @requirements ["app.start"]
-  @margin_of_error 0.1
+  @margin_of_error 0.05
 
   @impl Mix.Task
   def run(["--" <> _, _, _] = servers) do
