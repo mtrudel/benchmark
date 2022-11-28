@@ -76,7 +76,7 @@ defmodule Benchmark.Client do
       case {profile, scenario.clients} do
         {_, {clients, _}} when clients > 64 -> ["-n", "1000000"]
         {:tiny, _} -> ["-D", "5"]
-        _ -> ["-D", "30", "--warm-up-time", "5"]
+        _ -> ["-D", "15", "--warm-up-time", "5"]
       end
 
     upload =
