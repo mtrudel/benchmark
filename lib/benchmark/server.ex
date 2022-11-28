@@ -152,7 +152,7 @@ defmodule Benchmark.Server do
 
         def call(%{path_info: ["download"]} = conn, _opts) do
           MemoryMonitor.record_stats()
-          send_resp(conn, 204, @payload)
+          send_resp(conn, 200, @payload)
         end
 
         def call(%{path_info: ["echo"]} = conn, _opts) do
