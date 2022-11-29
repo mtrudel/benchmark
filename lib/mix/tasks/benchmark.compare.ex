@@ -26,19 +26,14 @@ defmodule Mix.Tasks.Benchmark.Compare do
         scenario = result_a.scenario
         result_b = Enum.find(results_b, &(&1.scenario == scenario))
 
-        {scenario.protocol, scenario.endpoint, scenario.clients, scenario.concurrency,
-         result_a.result, result_b.result}
+        {
+          [scenario.protocol, scenario.endpoint, scenario.concurrency],
+          scenario.clients,
+          result_a.result,
+          result_b.result
+        }
       end)
       |> Enum.sort()
-      |> Enum.map(fn {protocol, endpoint, clients, _concurrency, result_a, result_b} ->
-        [
-          protocol,
-          endpoint,
-          clients,
-          compare(result_a, result_b, :reqs_per_sec_mean, true, "FASTER", "SLOWER"),
-          compare(result_a, result_b, :memory_total, false, "LOWER", "HIGHER")
-        ]
-      end)
 
     server_a = List.first(results_a).server_def
     server_b = List.first(results_b).server_def
@@ -46,14 +41,31 @@ defmodule Mix.Tasks.Benchmark.Compare do
     summary = """
     **#{server_b.server} (#{server_b.treeish})** vs **#{server_a.server} (#{server_a.treeish})**
 
-    | Protocol | Endpoint | # Clients | Reqs per sec (mean) | Total memory |
-    | -------- | -------- | --------- | ------------------- | ------------ |
-    #{Enum.map_join(results, "\n", &("| " <> Enum.join(&1, " | ") <> " |"))}
+    #{tabulate(results)}
     """
 
     Logger.info("Writing summary to http-summary.md")
 
     File.write!("http-summary.md", summary)
+  end
+
+  defp tabulate(results) do
+    results =
+      results
+      |> Enum.map(fn {grouping, clients, result_a, result_b} ->
+        grouping ++
+          [
+            clients,
+            compare(result_a, result_b, :reqs_per_sec_mean, true, "FASTER", "SLOWER"),
+            compare(result_a, result_b, :memory_total, false, "LOWER", "HIGHER")
+          ]
+      end)
+
+    """
+    | Protocol | Endpoint | Concurrency | # Clients | Reqs per sec (mean) | Total memory |
+    | -------- | -------- | ----------- | --------- | ------------------- | ------------ |
+    #{Enum.map_join(results, "\n", &("| " <> Enum.join(&1, " | ") <> " |"))}
+    """
   end
 
   defp compare(a, b, key, larger_is_better, positive_msg, negative_msg) do
