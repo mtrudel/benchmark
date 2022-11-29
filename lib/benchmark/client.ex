@@ -41,7 +41,7 @@ defmodule Benchmark.Client do
   defp build_scenarios(:tiny) do
     do_build_scenarios(
       protocols: ["http/1.1"],
-      clients_and_threads: [{1, 1}],
+      clients_and_threads: [{1, 1}, {4, 4}, {16, 16}],
       concurrencies: [1],
       endpoints: ["echo"]
     )
