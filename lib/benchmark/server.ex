@@ -140,22 +140,40 @@ defmodule Benchmark.Server do
         def init(opts), do: opts
 
         def call(%{path_info: ["noop"]} = conn, _opts) do
-          MemoryMonitor.record_stats()
           send_resp(conn, 204, <<>>)
         end
 
         def call(%{path_info: ["upload"]} = conn, _opts) do
           {:ok, _body, conn} = do_read_body(conn)
-          MemoryMonitor.record_stats()
           send_resp(conn, 204, <<>>)
         end
 
         def call(%{path_info: ["download"]} = conn, _opts) do
-          MemoryMonitor.record_stats()
           send_resp(conn, 200, @payload)
         end
 
         def call(%{path_info: ["echo"]} = conn, _opts) do
+          {:ok, body, conn} = do_read_body(conn)
+          send_resp(conn, 200, body)
+        end
+
+        def call(%{path_info: ["memory_noop"]} = conn, _opts) do
+          MemoryMonitor.record_stats()
+          send_resp(conn, 204, <<>>)
+        end
+
+        def call(%{path_info: ["memory_upload"]} = conn, _opts) do
+          {:ok, _body, conn} = do_read_body(conn)
+          MemoryMonitor.record_stats()
+          send_resp(conn, 204, <<>>)
+        end
+
+        def call(%{path_info: ["memory_download"]} = conn, _opts) do
+          MemoryMonitor.record_stats()
+          send_resp(conn, 200, @payload)
+        end
+
+        def call(%{path_info: ["memory_echo"]} = conn, _opts) do
           {:ok, body, conn} = do_read_body(conn)
           MemoryMonitor.record_stats()
           send_resp(conn, 200, body)

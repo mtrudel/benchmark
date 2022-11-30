@@ -95,8 +95,10 @@ defmodule Mix.Tasks.Benchmark.Compare do
 
           results =
             Enum.zip_with(results_a, results_b, fn
+              nil, _ -> 1
               0, _ -> 1
               0.0, _ -> 1
+              _, nil -> 1
               a, b -> b / a
             end)
 
@@ -150,7 +152,7 @@ defmodule Mix.Tasks.Benchmark.Compare do
   end
 
   defp compare(a, b, key, larger_is_better, positive_msg, negative_msg) do
-    if a[key] == 0 do
+    if a[key] in [nil, 0, 0.0] or is_nil(b[key]) do
       ":collision: ERROR"
     else
       ratio = b[key] / a[key]
