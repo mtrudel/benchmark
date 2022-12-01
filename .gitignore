@@ -24,3 +24,6 @@ benchmark-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+http-benchmark.csv
+http-summary.md
