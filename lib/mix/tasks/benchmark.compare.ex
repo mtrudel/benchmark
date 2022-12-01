@@ -116,22 +116,18 @@ defmodule Mix.Tasks.Benchmark.Compare do
             ]
           },
           scales: %{
-            xAxes: [
-              %{
-                scaleLabel: %{
-                  display: true,
-                  labelString: "Number of Clients"
-                }
+            x: %{
+              scaleLabel: %{
+                display: true,
+                labelString: "Number of Clients"
               }
-            ],
-            yAxes: [
-              %{
-                scaleLabel: %{
-                  display: true,
-                  labelString: "Difference"
-                }
+            },
+            y: %{
+              scaleLabel: %{
+                display: true,
+                labelString: "Difference"
               }
-            ]
+            }
           }
         },
         data: %{
