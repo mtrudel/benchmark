@@ -48,7 +48,7 @@ defmodule Benchmark.Server do
   defp server_script(%{server: "bandit", treeish: "local", port: port}) do
     quote do
       unquote(memory_monitor())
-      Mix.install([{:bandit, path: "../bandit"}])
+      Mix.install([{:bandit, path: "../bandit", force: true}])
       unquote(plug_def())
       Bandit.start_link(plug: BenchmarkPlug, options: [port: unquote(port)])
       Process.sleep(:infinity)
@@ -59,7 +59,7 @@ defmodule Benchmark.Server do
   defp server_script(%{server: "bandit", repo: repo, treeish: treeish, port: port}) do
     quote do
       unquote(memory_monitor())
-      Mix.install([{:bandit, git: unquote(repo), ref: unquote(treeish)}])
+      Mix.install([{:bandit, git: unquote(repo), ref: unquote(treeish), force: true}])
       unquote(plug_def())
       Bandit.start_link(plug: BenchmarkPlug, options: [port: unquote(port)])
       Process.sleep(:infinity)
@@ -70,7 +70,7 @@ defmodule Benchmark.Server do
   defp server_script(%{server: "bandit", treeish: treeish, port: port}) do
     quote do
       unquote(memory_monitor())
-      Mix.install([{:bandit, github: "mtrudel/bandit", ref: unquote(treeish)}])
+      Mix.install([{:bandit, github: "mtrudel/bandit", ref: unquote(treeish), force: true}])
       unquote(plug_def())
       Bandit.start_link(plug: BenchmarkPlug, options: [port: unquote(port)])
       Process.sleep(:infinity)
@@ -81,7 +81,11 @@ defmodule Benchmark.Server do
   defp server_script(%{server: "cowboy", treeish: treeish, port: port}) do
     quote do
       unquote(memory_monitor())
-      Mix.install([{:plug_cowboy, github: "elixir-plug/plug_cowboy", ref: unquote(treeish)}])
+
+      Mix.install([
+        {:plug_cowboy, github: "elixir-plug/plug_cowboy", ref: unquote(treeish), force: true}
+      ])
+
       unquote(plug_def())
       Plug.Cowboy.http(BenchmarkPlug, [], port: unquote(port))
       Process.sleep(:infinity)
