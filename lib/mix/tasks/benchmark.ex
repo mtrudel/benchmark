@@ -15,7 +15,7 @@ defmodule Mix.Tasks.Benchmark do
 
     [results_a, results_b] =
       servers
-      |> Enum.map(&Benchmark.run(&1, String.to_atom(args[:profile])))
+      |> Enum.map(&Benchmark.run(&1, args))
       |> tap(fn results ->
         results
         |> List.flatten()

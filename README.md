@@ -7,11 +7,11 @@ plug-compatible web servers.
 
 ### Generating Raw Benchmark Data
 
-The following will run the complete benchmark suite against either Bandit or
-Cowboy, dynamically installing the corresponding mix package from the given GitHub treeish:
+The following will run the complete benchmark suite against a baseline and test
+server (each of which may be any version of either Bandit or Cowboy):
 
 ```
-> mix benchmark [server_def]*
+> mix benchmark [options] <server_def_a> <server_def_b>
 ```
 
 where `server_def` is one or more of:
@@ -21,18 +21,16 @@ where `server_def` is one or more of:
 * `cowboy` to run against Plug.Cowboy's `master` ref
 * `cowboy@ref` to run against Plug.Cowboy, as of the given `ref` on GitHub
 
-Output will be placed in `http-benchmark.csv`, which will be overwritten if present.
+A summary Markdown document will be placed in `http-summary.md`
 
-### Generating Comparative Benchmark Data
+Detailed CSV output will be placed in `http-benchmark.csv`
 
-The following will run the complete benchmark suite against two servers, and
-provide output indicating which are faster / slower on each test scenario. `server_def` is as above.
+Options include
 
-```
-> mix benchmark.compare <server_def_a> <server_def_b>
-```
-
-Output will be placed in `http-benchmark.csv`, which will be overwritten if present.
+* `--profile <tiny | normal | huge >` which profile size to run. Defaults to
+`normal`
+* `--protocol <protocol>` which protocol(s) to test. Defaults to `http/1.1,h2c`
+* `--bigfile <true | false>` whether to use a large 10M file for upload tests. Defaults to false (wich uses a 10k file)
 
 ### Running via Docker
 
@@ -51,7 +49,7 @@ do the following:
     RUN mix local.hex —force
     RUN mix local.rebar —force
     RUN mix deps.get
-    CMD mix benchmark.compare -—huge cowboy bandit@main
+    CMD mix benchmark -—profile huge cowboy bandit@main
     ```
 3. Run like
     ```

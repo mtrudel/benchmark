@@ -1,11 +1,11 @@
 defmodule Benchmark do
   @moduledoc false
 
-  def run(server, profile) do
+  def run(server, args) do
     server_def = parse!(server)
 
     Benchmark.Server.run(server_def, fn ->
-      Benchmark.Client.run(server_def, profile)
+      Benchmark.Client.run(server_def, args)
     end)
   end
 

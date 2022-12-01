@@ -6,12 +6,11 @@ defmodule Benchmark.Client do
   @file_10k Path.join(:code.priv_dir(:benchmark), "random_10k")
   @file_10m Path.join(:code.priv_dir(:benchmark), "random_10m")
 
-  def run(server_def, profile) do
-    Logger.info(
-      "Benchmarking #{server_def.server} (#{server_def.treeish}) using #{profile} profile"
-    )
+  def run(server_def, args) do
+    profile = Keyword.get(args, :profile, "normal")
+    Logger.info("Benchmarking #{server_def.server} (#{server_def.treeish}) #{profile} profile")
 
-    build_scenarios(profile)
+    build_scenarios(args)
     |> Enum.map(fn scenario ->
       Logger.info(
         "Running #{scenario.protocol} with #{scenario.clients} clients against #{scenario.endpoint}"
@@ -21,7 +20,7 @@ defmodule Benchmark.Client do
 
       result =
         scenario
-        |> run_benchmark(server_def, profile)
+        |> run_benchmark(server_def)
         |> parse_output()
         |> Map.merge(get_server_stats(server_def))
 
@@ -29,64 +28,72 @@ defmodule Benchmark.Client do
     end)
   end
 
-  defp build_scenarios(normal) when normal in [:normal, :normal_bigfile] do
-    do_build_scenarios(
-      protocols: ["http/1.1", "h2c"],
-      clients_and_threads: [{1, 1}, {4, 4}, {16, 16}, {64, 32}],
-      concurrencies: [1],
-      endpoints: ["noop", "upload", "download", "echo"]
-    )
-  end
-
-  defp build_scenarios(:tiny) do
-    do_build_scenarios(
-      protocols: ["http/1.1"],
-      clients_and_threads: [{1, 1}, {4, 4}, {16, 16}],
-      concurrencies: [1],
-      endpoints: ["echo"]
-    )
-  end
-
-  defp build_scenarios(huge) when huge in [:huge, :huge_bigfile] do
-    do_build_scenarios(
-      protocols: ["http/1.1", "h2c"],
-      clients_and_threads: [{1, 1}, {4, 4}, {16, 16}, {64, 32}, {256, 32}, {1024, 32}],
-      concurrencies: [1, 4, 16],
-      endpoints: ["noop", "upload", "download", "echo"]
-    )
-  end
-
-  defp do_build_scenarios(params) do
-    for protocol <- params[:protocols],
-        concurrency <- params[:concurrencies],
-        {clients, threads} <- params[:clients_and_threads],
-        endpoint <- params[:endpoints] do
+  defp build_scenarios(args) do
+    for protocol <- build_protocols(args),
+        concurrency <- build_concurrencies(args),
+        clients <- build_clients(args),
+        endpoint <- build_endpoints(args) do
       %{
         protocol: protocol,
         concurrency: concurrency,
-        threads: threads,
+        threads: build_threads(clients),
         clients: clients,
-        endpoint: endpoint
+        endpoint: endpoint,
+        upload_file: build_upload_file(args, endpoint),
+        duration: build_duration(args, clients)
       }
     end
   end
 
-  defp run_benchmark(scenario, server_def, profile) do
+  defp build_protocols(args) do
+    args
+    |> Keyword.get(:protocol, "http/1.1,h2c")
+    |> String.split(",")
+  end
+
+  defp build_concurrencies(args) do
+    if Keyword.get(args, :profile) == "huge", do: [1, 4, 16], else: [1]
+  end
+
+  defp build_clients(args) do
+    case Keyword.get(args, :profile, "normal") do
+      "tiny" -> [1, 4, 16]
+      "normal" -> [1, 4, 16, 64]
+      "huge" -> [1, 4, 16, 64, 256, 1024]
+    end
+  end
+
+  defp build_threads(clients), do: min(clients, 32)
+
+  defp build_endpoints(args) do
+    if Keyword.get(args, :profile) == "tiny",
+      do: ["noop"],
+      else: ["noop", "upload", "download", "echo"]
+  end
+
+  defp build_upload_file(args, endpoint) when endpoint in ["echo", "upload"] do
+    if Keyword.get(args, :bigfile) == "true", do: @file_10m, else: @file_10k
+  end
+
+  defp build_upload_file(_args, _endpoint), do: nil
+
+  defp build_duration(_args, clients) when clients > 64, do: {:count, 1_000_000}
+
+  defp build_duration(args, _clients) do
+    if Keyword.get(args, :profile) == "tiny", do: {:duration, 5, 1}, else: {:duration, 15, 5}
+  end
+
+  defp run_benchmark(scenario, server_def) do
     duration =
-      case {profile, scenario.clients} do
-        {_, {clients, _}} when clients > 64 -> ["-n", "1000000"]
-        {:tiny, _} -> ["-D", "5"]
-        _ -> ["-D", "15", "--warm-up-time", "5"]
+      case scenario.duration do
+        {:count, count} ->
+          ["-n", to_string(count)]
+
+        {:duration, duration, warm_up} ->
+          ["-D", to_string(duration), "--warm-up-time", to_string(warm_up)]
       end
 
-    upload =
-      if scenario.endpoint in [:upload, :echo] do
-        if profile in [:normal_bigfile, :huge_bigfile],
-          do: ["-d", @file_10m],
-          else: ["-d", @file_10k]
-      else
-        []
-      end
+    upload = if scenario.upload_file, do: ["-d", scenario.upload_file], else: []
 
     MuonTrap.cmd(
       "h2load",
