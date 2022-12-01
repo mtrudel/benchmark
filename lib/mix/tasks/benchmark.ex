@@ -7,7 +7,6 @@ defmodule Mix.Tasks.Benchmark do
   require Logger
 
   @requirements ["app.start"]
-  @margin_of_error 0.05
 
   @impl Mix.Task
   def run(args) do
@@ -55,34 +54,12 @@ defmodule Mix.Tasks.Benchmark do
 
       #{graph(results, protocol, server_a, server_b)}
 
-      #{tabulate(results)}
-
       """ end)}
     """
 
     Logger.info("Writing summary to http-summary.md")
 
     File.write!("http-summary.md", summary)
-  end
-
-  defp tabulate(results) do
-    results =
-      results
-      |> Enum.map(fn [endpoint, concurrency, clients, result_a, result_b] ->
-        [
-          endpoint,
-          concurrency,
-          clients,
-          compare(result_a, result_b, :reqs_per_sec_mean, true, "FASTER", "SLOWER"),
-          compare(result_a, result_b, :memory_total, false, "LOWER", "HIGHER")
-        ]
-      end)
-
-    """
-    | Endpoint | Concurrency | # Clients | Reqs per sec (mean) | Total memory |
-    | -------- | ----------- | --------- | ------------------- | ------------ |
-    #{Enum.map_join(results, "\n", &("| " <> Enum.join(&1, " | ") <> " |"))}
-    """
   end
 
   defp graph(results, protocol, server_a, server_b) do
@@ -151,31 +128,5 @@ defmodule Mix.Tasks.Benchmark do
 
       "![](#{uri})\n"
     end)
-  end
-
-  defp compare(a, b, key, larger_is_better, positive_msg, negative_msg) do
-    if a[key] in [nil, 0, 0.0] or is_nil(b[key]) do
-      ":collision: ERROR"
-    else
-      ratio = b[key] / a[key]
-      ratio_str = :erlang.float_to_binary(ratio, decimals: 2)
-
-      cond do
-        ratio < 1 - @margin_of_error && larger_is_better ->
-          ":x: #{negative_msg} (#{ratio_str}x)"
-
-        ratio < 1 - @margin_of_error && !larger_is_better ->
-          ":white_check_mark: #{positive_msg} (#{ratio_str}x)"
-
-        ratio > 1 + @margin_of_error && larger_is_better ->
-          ":white_check_mark: #{positive_msg} (#{ratio_str}x)"
-
-        ratio > 1 + @margin_of_error && !larger_is_better ->
-          ":x: #{negative_msg} (#{ratio_str}x)"
-
-        true ->
-          ":ballot_box_with_check: IT'S A WASH (#{ratio_str}x)"
-      end
-    end
   end
 end
