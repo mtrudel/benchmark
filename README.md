@@ -31,6 +31,8 @@ Options include
 `normal`
 * `--protocol <protocol>` which protocol(s) to test. Defaults to `http/1.1,h2c`
 * `--bigfile <true | false>` whether to use a large 10M file for upload tests. Defaults to false (wich uses a 10k file)
+* `--memory <true | false>` whether to gather memory stats. This will severely
+  skew any speed performance numbers. Defaults to false
 
 ### Running via Docker
 

@@ -66,9 +66,12 @@ defmodule Benchmark.Client do
   defp build_threads(clients), do: min(clients, 32)
 
   defp build_endpoints(args) do
-    if Keyword.get(args, :profile) == "tiny",
-      do: ["noop"],
-      else: ["noop", "upload", "download", "echo"]
+    case {Keyword.get(args, :profile), Keyword.get(args, :memory)} do
+      {"tiny", "true"} -> ["memory_noop"]
+      {"tiny", _} -> ["noop"]
+      {_, "true"} -> ["memory_noop", "memory_upload", "memory_download", "memory_echo"]
+      {_, _} -> ["noop", "upload", "download", "echo"]
+    end
   end
 
   defp build_upload_file(args, endpoint) when endpoint in ["echo", "upload"] do
