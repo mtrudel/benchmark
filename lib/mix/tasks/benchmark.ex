@@ -99,20 +99,26 @@ defmodule Mix.Tasks.Benchmark do
             ]
           },
           scales: %{
-            x: %{
-              scaleLabel: %{
-                display: true,
-                labelString: "Number of Clients"
+            xAxes: [
+              %{
+                scaleLabel: %{
+                  display: true,
+                  labelString: "Number of Clients"
+                }
               }
-            },
-            y: %{
-              scaleLabel: %{
-                display: true,
-                labelString: "% Difference"
-              },
-              suggestedMin: -25,
-              suggestedMax: 25
-            }
+            ],
+            yAxes: [
+              %{
+                scaleLabel: %{
+                  display: true,
+                  labelString: "Percent Difference"
+                },
+                gridLines: %{
+                  zeroLineColor: "gray",
+                  zeroLineWidth: 3
+                }
+              }
+            ]
           }
         },
         data: %{
