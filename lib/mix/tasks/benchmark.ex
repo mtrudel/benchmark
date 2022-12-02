@@ -78,11 +78,11 @@ defmodule Mix.Tasks.Benchmark do
 
           results =
             Enum.zip_with(results_a, results_b, fn
-              nil, _ -> 1
-              0, _ -> 1
-              0.0, _ -> 1
-              _, nil -> 1
-              a, b -> b / a
+              nil, _ -> 0
+              0, _ -> 0
+              0.0, _ -> 0
+              _, nil -> 0
+              a, b -> 100 * b / a - 100
             end)
 
           {endpoint, results}
@@ -108,8 +108,10 @@ defmodule Mix.Tasks.Benchmark do
             y: %{
               scaleLabel: %{
                 display: true,
-                labelString: "Difference"
-              }
+                labelString: "% Difference"
+              },
+              suggestedMin: -25,
+              suggestedMax: 25
             }
           }
         },
@@ -117,7 +119,7 @@ defmodule Mix.Tasks.Benchmark do
           labels: clients,
           datasets:
             Enum.map(results_by_endpoint, fn {endpoint, results} ->
-              %{label: endpoint, data: results, fill: false}
+              %{label: endpoint, data: results, fill: "origin"}
             end)
         }
       }
