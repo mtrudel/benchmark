@@ -1,4 +1,4 @@
-defmodule Benchmark.Client do
+defmodule Benchmark.HTTPClient do
   @moduledoc false
 
   require Logger

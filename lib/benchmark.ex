@@ -5,7 +5,7 @@ defmodule Benchmark do
     server_def = parse!(server)
 
     Benchmark.Server.run(server_def, fn ->
-      Benchmark.Client.run(server_def, args)
+      Benchmark.HTTPClient.run(server_def, args)
     end)
   end
 
