@@ -49,6 +49,7 @@ defmodule Benchmark.HTTPClient do
     args
     |> Keyword.get(:protocol, "http/1.1,h2c")
     |> String.split(",")
+    |> List.delete("ws")
   end
 
   defp build_concurrencies(args) do
