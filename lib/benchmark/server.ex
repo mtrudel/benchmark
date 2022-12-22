@@ -48,7 +48,12 @@ defmodule Benchmark.Server do
   defp server_script(%{server: "bandit", treeish: "local", port: port}) do
     quote do
       unquote(memory_monitor())
-      Mix.install([{:bandit, path: "../bandit", force: true}])
+
+      Mix.install([
+        {:bandit, path: "../bandit", force: true, override: true},
+        {:websock_adapter, "~> 0.4"}
+      ])
+
       unquote(plug_def())
       Bandit.start_link(plug: BenchmarkPlug, options: [port: unquote(port)])
       Process.sleep(:infinity)
@@ -59,7 +64,12 @@ defmodule Benchmark.Server do
   defp server_script(%{server: "bandit", repo: repo, treeish: treeish, port: port}) do
     quote do
       unquote(memory_monitor())
-      Mix.install([{:bandit, git: unquote(repo), ref: unquote(treeish), force: true}])
+
+      Mix.install([
+        {:bandit, git: unquote(repo), ref: unquote(treeish), force: true, override: true},
+        {:websock_adapter, "~> 0.4"}
+      ])
+
       unquote(plug_def())
       Bandit.start_link(plug: BenchmarkPlug, options: [port: unquote(port)])
       Process.sleep(:infinity)
@@ -70,7 +80,12 @@ defmodule Benchmark.Server do
   defp server_script(%{server: "bandit", treeish: treeish, port: port}) do
     quote do
       unquote(memory_monitor())
-      Mix.install([{:bandit, github: "mtrudel/bandit", ref: unquote(treeish), force: true}])
+
+      Mix.install([
+        {:bandit, github: "mtrudel/bandit", ref: unquote(treeish), force: true, override: true},
+        {:websock_adapter, "~> 0.4"}
+      ])
+
       unquote(plug_def())
       Bandit.start_link(plug: BenchmarkPlug, options: [port: unquote(port)])
       Process.sleep(:infinity)
@@ -83,7 +98,9 @@ defmodule Benchmark.Server do
       unquote(memory_monitor())
 
       Mix.install([
-        {:plug_cowboy, github: "elixir-plug/plug_cowboy", ref: unquote(treeish), force: true}
+        {:plug_cowboy,
+         github: "elixir-plug/plug_cowboy", ref: unquote(treeish), force: true, override: true},
+        {:websock_adapter, "~> 0.4"}
       ])
 
       unquote(plug_def())
@@ -134,6 +151,20 @@ defmodule Benchmark.Server do
 
   defp plug_def do
     quote do
+      defmodule WebSocketHandler do
+        @payload String.duplicate("a", 10_000)
+
+        def init("noop"), do: {:ok, "noop"}
+        def init("upload"), do: {:ok, "upload"}
+        def init("download"), do: {:ok, "download"}
+        def init("echo"), do: {:ok, "echo"}
+        def handle_in({_, _}, "download"), do: {:push, {:text, @payload}, "download"}
+        def handle_in({msg, _}, "echo"), do: {:push, {:text, msg}, "echo"}
+        def handle_in(_, state), do: {:ok, state}
+        def handle_info(_, state), do: {:ok, state}
+        def terminate(_, _), do: :ok
+      end
+
       defmodule BenchmarkPlug do
         @moduledoc false
 
@@ -159,6 +190,10 @@ defmodule Benchmark.Server do
         def call(%{path_info: ["echo"]} = conn, _opts) do
           {:ok, body, conn} = do_read_body(conn)
           send_resp(conn, 200, body)
+        end
+
+        def call(%{path_info: ["websocket", action]} = conn, _opts) do
+          WebSockAdapter.upgrade(conn, WebSocketHandler, action, [])
         end
 
         def call(%{path_info: ["memory_noop"]} = conn, _opts) do
