@@ -57,7 +57,9 @@ defmodule WebSocketClientWorker do
   end
 
   defp connect(hostname, port, endpoint) do
-    {:ok, conn} = Mint.HTTP.connect(:http, hostname, port, transport_opts: [timeout: 60_000])
+    {:ok, conn} =
+      Mint.HTTP.connect(:http, hostname, port, transport_opts: [nodelay: true, timeout: 60_000])
+
     {:ok, conn, ref} = Mint.WebSocket.upgrade(:ws, conn, "/websocket/#{endpoint}", [])
     message = receive(do: (message -> message))
 
