@@ -52,7 +52,10 @@ defmodule Mix.Tasks.Benchmark do
     #{results |> Enum.map(fn {protocol, results} -> """
       ## #{protocol}
 
-      #{graph(results, protocol, server_a, server_b)}
+      #{graph(results, protocol, server_a, server_b, :reqs_per_sec_mean)}
+      #{graph(results, protocol, server_a, server_b, :time_to_connect_mean)}
+      #{graph(results, protocol, server_a, server_b, :time_to_first_byte_mean)}
+      #{graph(results, protocol, server_a, server_b, :time_to_request_mean)}
 
       """ end)}
     """
@@ -62,7 +65,7 @@ defmodule Mix.Tasks.Benchmark do
     File.write!("http-summary.md", summary)
   end
 
-  defp graph(results, protocol, server_a, server_b) do
+  defp graph(results, protocol, server_a, server_b, attribute) do
     results
     |> Enum.group_by(&Enum.at(&1, 1))
     |> Enum.map(fn {concurrency, results} ->
@@ -73,8 +76,8 @@ defmodule Mix.Tasks.Benchmark do
         results
         |> Enum.group_by(&Enum.at(&1, 0), &Enum.take(&1, -2))
         |> Enum.map(fn {endpoint, results} ->
-          results_a = results |> Enum.map(&Enum.at(&1, 0)) |> Enum.map(& &1[:reqs_per_sec_mean])
-          results_b = results |> Enum.map(&Enum.at(&1, 1)) |> Enum.map(& &1[:reqs_per_sec_mean])
+          results_a = results |> Enum.map(&Enum.at(&1, 0)) |> Enum.map(& &1[attribute])
+          results_b = results |> Enum.map(&Enum.at(&1, 1)) |> Enum.map(& &1[attribute])
 
           results =
             Enum.zip_with(results_a, results_b, fn
@@ -95,7 +98,7 @@ defmodule Mix.Tasks.Benchmark do
             display: true,
             text: [
               "#{server_b.server}@#{server_b.treeish} vs. #{server_a.server}@#{server_a.treeish}",
-              "#{protocol} @ #{concurrency} concurrency, requests per second"
+              "#{protocol} @ #{concurrency} concurrency, #{attribute}"
             ]
           },
           scales: %{
