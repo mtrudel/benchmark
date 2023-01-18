@@ -84,7 +84,7 @@ defmodule Benchmark.HTTPClient do
   defp build_duration(_args, clients) when clients > 64, do: {:count, 1_000_000}
 
   defp build_duration(args, _clients) do
-    if Keyword.get(args, :profile) == "tiny", do: {:duration, 5, 1}, else: {:duration, 15, 5}
+    if Keyword.get(args, :profile) == "tiny", do: {:duration, 5}, else: {:duration, 15}
   end
 
   defp run_benchmark(scenario, server_def) do
@@ -93,8 +93,8 @@ defmodule Benchmark.HTTPClient do
         {:count, count} ->
           ["-n", to_string(count)]
 
-        {:duration, duration, warm_up} ->
-          ["-D", to_string(duration), "--warm-up-time", to_string(warm_up)]
+        {:duration, duration} ->
+          ["-D", to_string(duration)]
       end
 
     upload = if scenario.upload_file, do: ["-d", scenario.upload_file], else: []
