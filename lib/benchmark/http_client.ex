@@ -59,8 +59,8 @@ defmodule Benchmark.HTTPClient do
   defp build_clients(args) do
     case Keyword.get(args, :profile, "normal") do
       "tiny" -> [1, 4, 16]
-      "normal" -> [1, 2, 4, 16, 64]
-      "huge" -> [1, 2, 4, 16, 64, 256, 1024]
+      "normal" -> [2, 4, 16, 64, 256]
+      "huge" -> [2, 4, 16, 64, 256, 1024, 4096]
     end
   end
 
