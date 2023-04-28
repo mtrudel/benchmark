@@ -55,7 +55,7 @@ defmodule Benchmark.Server do
       ])
 
       unquote(plug_def())
-      Bandit.start_link(plug: BenchmarkPlug, options: [port: unquote(port)])
+      Bandit.start_link(plug: BenchmarkPlug, port: unquote(port))
       Process.sleep(:infinity)
     end
     |> Macro.to_string()
@@ -71,7 +71,7 @@ defmodule Benchmark.Server do
       ])
 
       unquote(plug_def())
-      Bandit.start_link(plug: BenchmarkPlug, options: [port: unquote(port)])
+      Bandit.start_link(plug: BenchmarkPlug, port: unquote(port))
       Process.sleep(:infinity)
     end
     |> Macro.to_string()
@@ -87,7 +87,7 @@ defmodule Benchmark.Server do
       ])
 
       unquote(plug_def())
-      Bandit.start_link(plug: BenchmarkPlug, options: [port: unquote(port)])
+      Bandit.start_link(plug: BenchmarkPlug, port: unquote(port))
       Process.sleep(:infinity)
     end
     |> Macro.to_string()
