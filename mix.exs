@@ -23,7 +23,7 @@ defmodule Benchmark.MixProject do
       {:finch, "~> 0.13"},
       {:mint_web_socket, "~> 1.0"},
       {:jason, "~> 1.4"},
-      {:muontrap, "~> 1.0"},
+      {:muontrap, "~> 1.2.0"},
       {:csv, "~> 3.0"}
     ]
   end
