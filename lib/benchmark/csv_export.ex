@@ -5,7 +5,7 @@ defmodule Benchmark.CSVExport do
     server: "Server",
     treeish: "Treeish",
     protocol: "Protocol",
-    endpoint: "Test endopint",
+    endpoint: "Test endpoint",
     clients: "Number of clients",
     concurrency: "Client concurrency",
     threads: "Number of client threads",
