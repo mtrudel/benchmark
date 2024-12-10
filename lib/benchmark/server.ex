@@ -21,7 +21,7 @@ defmodule Benchmark.Server do
   end
 
   defp start_server(server_def) do
-    MuonTrap.Daemon.start_link("elixir", ["-e", server_script(server_def)],
+    MuonTrap.Daemon.start_link("perf", ["record", "-o", "./perf.data", "--call-graph=fp", "--", "elixir", "--erl", "+JPperf true", "-e", server_script(server_def)],
       stderr_to_stdout: true,
       log_output: :debug
     )
