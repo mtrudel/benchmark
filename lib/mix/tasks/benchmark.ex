@@ -83,7 +83,8 @@ defmodule Mix.Tasks.Benchmark do
             Enum.zip_with(results_a, results_b, fn
               nil, _ -> 0
               0, _ -> 0
-              0.0, _ -> 0
+              +0.0, _ -> 0
+              -0.0, _ -> 0
               _, nil -> 0
               a, b -> 100 * b / a - 100
             end)
